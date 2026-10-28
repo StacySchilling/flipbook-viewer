@@ -197,6 +197,7 @@ async function buildFlipbookFromPdf(file) {
   const pdf = await loadingTask.promise;
 
   pageCount = pdf.numPages;
+  storyTexts = [];
   if (pageCount > 0) {
     // Match flipbook page shape to the document to avoid portrait/landscape letterboxing.
     const firstPage = await pdf.getPage(1);
@@ -230,8 +231,16 @@ async function buildFlipbookFromPdf(file) {
     }
 
     const page = await pdf.getPage(i);
-    const imageUrl = await renderPageAsImage(page, qualityPreset.scale, qualityPreset.imageQuality);
-    currentObjectUrls.push(imageUrl);
+
+const textContent = await page.getTextContent();
+const pageText = textContent.items
+  .map((item) => item.str)
+  .join(" ")
+  .trim();
+
+storyTexts.push(pageText);
+
+const imageUrl = await renderPageAsImage(page, qualityPreset.scale, qualityPreset.imageQuality);
 
     const pageNode = buildPageNode(imageUrl, i);
     flipbookEl.appendChild(pageNode);
@@ -251,7 +260,8 @@ async function buildFlipbookFromPdf(file) {
     flipbookContainer.hidden = false;
     statusEl.hidden = true;
     initializeFlipbook();
-    setStatus("Flipbook ready.");
+updateReadingButtons(true);
+setStatus("Flipbook ready.");
     statusEl.hidden = false;
     statusEl.classList.remove("error");
   }
