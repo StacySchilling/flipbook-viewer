@@ -48,6 +48,10 @@ function setControlsEnabled(enabled) {
   nextBtn.disabled = !enabled;
   goToPageBtn.disabled = !enabled;
   pageNumberInput.disabled = !enabled;
+
+  readBtn.disabled = !enabled;
+  pauseBtn.disabled = !enabled;
+  stopBtn.disabled = !enabled;
 }
 
 function updateIndicator() {
