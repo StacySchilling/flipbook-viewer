@@ -402,8 +402,10 @@ readBtn.addEventListener("click", () => {
 
   window.speechSynthesis.cancel();
 
-  currentSpeechPage = pageFlip.getCurrentPageIndex();
-  isReading = true;
+  currentSpeechPage = Math.max(
+  0,
+  pageFlip.getCurrentPageIndex() - 1
+);
 
   function speakNextPage() {
     if (!isReading || currentSpeechPage >= storyTexts.length) {
