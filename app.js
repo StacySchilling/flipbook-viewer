@@ -18,6 +18,15 @@ const goToPageBtn = document.getElementById("goToPageBtn");
 const pageNumberInput = document.getElementById("pageNumberInput");
 const pageIndicator = document.getElementById("pageIndicator");
 
+const readBtn = document.getElementById("readBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const stopBtn = document.getElementById("stopBtn");
+const readingSpeed = document.getElementById("readingSpeed");
+
+let storyTexts = [];
+let isReading = false;
+let currentSpeechPage = 0;
+
 let pageFlip = null;
 let currentPage = 1;
 let pageCount = 0;
