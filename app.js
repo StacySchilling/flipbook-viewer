@@ -216,6 +216,20 @@ async function buildFlipbookFromPdf(file) {
   const pdf = await loadingTask.promise;
 
   pageCount = pdf.numPages;
+  
+  storyTexts = [];
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const textPage = await pdf.getPage(i);
+    const textContent = await textPage.getTextContent();
+    const pageText = textContent.items
+      .map((item) => item.str)
+      .join(" ")
+      .trim();
+
+    storyTexts.push(pageText);
+  }
+
 
   if (pageCount > 0) {
     const firstPage = await pdf.getPage(1);
