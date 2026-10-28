@@ -320,6 +320,27 @@ viewerWrap.addEventListener("dragleave", (event) => {
 viewerWrap.addEventListener("drop", async (event) => {
   event.preventDefault();
   dragDepth = 0;
+   utterance.rate = Number(readingSpeed.value);
+  utterance.onend = () => {
+    isReading = false;
+    pauseBtn.textContent = "⏸ Pause";
+  };
+
+  window.speechSynthesis.speak(utterance);
+  isReading = true;
+});
+
+pauseBtn.addEventListener("click", () => {
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+    pauseBtn.textContent = "⏸ Pause";
+  } else if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.pause();
+    pauseBtn.textContent = "▶ Resume";
+  }
+});
+
+stopBtn.addEventListener("click", stopReading);
   viewerWrap.classList.remove("drag-active");
 
   const file = event.dataTransfer.files?.[0];
