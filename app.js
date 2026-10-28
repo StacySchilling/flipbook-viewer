@@ -402,7 +402,7 @@ readBtn.addEventListener("click", () => {
 
   window.speechSynthesis.cancel();
 
-  currentSpeechPage = 0;
+  currentSpeechPage = pageFlip.getCurrentPageIndex();
   isReading = true;
 
   function speakNextPage() {
