@@ -413,7 +413,14 @@ readBtn.addEventListener("click", () => {
 
     const text = storyTexts[currentSpeechPage];
 
-    currentSpeechPage++;
+const pageToRead = currentSpeechPage;
+currentSpeechPage++;
+
+const flipbookPageIndex = pageToRead + 1;
+
+if (pageFlip.getCurrentPageIndex() !== flipbookPageIndex) {
+  pageFlip.flip(flipbookPageIndex);
+}
 
     if (!text) {
       speakNextPage();
