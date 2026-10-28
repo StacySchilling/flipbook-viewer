@@ -392,3 +392,63 @@ goToPageBtn.addEventListener("click", () => {
 
 setControlsEnabled(false);
 updateIndicator();
+
+
+readBtn.addEventListener("click", () => {
+  if (!storyTexts.length) {
+    setStatus("No readable text was found in this PDF.", true);
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+
+  currentSpeechPage = 0;
+  isReading = true;
+
+  function speakNextPage() {
+    if (!isReading || currentSpeechPage >= storyTexts.length) {
+      isReading = false;
+      return;
+    }
+
+    const text = storyTexts[currentSpeechPage];
+
+    currentSpeechPage++;
+
+    if (!text) {
+      speakNextPage();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = Number(readingSpeed.value);
+
+    utterance.onend = speakNextPage;
+
+    utterance.onerror = () => {
+      isReading = false;
+      setStatus("Reading stopped. Please try again.", true);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  speakNextPage();
+});
+
+pauseBtn.addEventListener("click", () => {
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+    pauseBtn.textContent = "⏸ Pause";
+  } else if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.pause();
+    pauseBtn.textContent = "▶ Resume";
+  }
+});
+
+stopBtn.addEventListener("click", () => {
+  isReading = false;
+  window.speechSynthesis.cancel();
+  pauseBtn.textContent = "⏸ Pause";
+});
+
