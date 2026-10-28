@@ -1,3 +1,4 @@
+
 /* global pdfjsLib, St */
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -22,11 +23,13 @@ let currentPage = 1;
 let pageCount = 0;
 let currentObjectUrls = [];
 let bookDimensions = { width: 900, height: 1200 };
+
 const BLANK_FRONT_PAGE_COUNT = 1;
 const BLANK_BACK_PAGE_COUNT = 1;
 
 const DEFAULT_PAGE_WIDTH = 900;
 const DEFAULT_PAGE_HEIGHT = 1200;
+
 const QUALITY_PRESETS = {
   fast: { scale: 0.95, imageQuality: 0.8, label: "Fast" },
   balanced: { scale: 1.25, imageQuality: 0.9, label: "Balanced" },
@@ -62,7 +65,6 @@ function updateIndicator() {
     return;
   }
 
-  const totalPages = BLANK_FRONT_PAGE_COUNT + pageCount + BLANK_BACK_PAGE_COUNT;
   if (currentPage > BLANK_FRONT_PAGE_COUNT + pageCount) {
     pageIndicator.textContent = `PDF page ${pageCount} of ${pageCount}`;
     pageNumberInput.value = String(pageCount);
@@ -70,7 +72,11 @@ function updateIndicator() {
     return;
   }
 
-  const pdfPage = Math.min(pageCount, currentPage - BLANK_FRONT_PAGE_COUNT);
+  const pdfPage = Math.min(
+    pageCount,
+    currentPage - BLANK_FRONT_PAGE_COUNT
+  );
+
   pageIndicator.textContent = `PDF page ${pdfPage} of ${pageCount}`;
   pageNumberInput.value = String(pdfPage);
   pageNumberInput.max = String(pageCount);
@@ -190,22 +196,22 @@ function initializeFlipbook() {
 async function buildFlipbookFromPdf(file) {
   resetFlipbook();
   setStatus("Reading PDF...");
-  const qualityPreset = getSelectedQualityPreset();
 
+  const qualityPreset = getSelectedQualityPreset();
   const fileData = await file.arrayBuffer();
   const loadingTask = pdfjsLib.getDocument({ data: fileData });
   const pdf = await loadingTask.promise;
 
   pageCount = pdf.numPages;
-  storyTexts = [];
+
   if (pageCount > 0) {
-    // Match flipbook page shape to the document to avoid portrait/landscape letterboxing.
     const firstPage = await pdf.getPage(1);
     const firstViewport = firstPage.getViewport({ scale: 1 });
     const baseWidth = firstViewport.width;
     const baseHeight = firstViewport.height;
     const longSide = 1200;
-    const scaleToLongSide = longSide / Math.max(baseWidth, baseHeight);
+    const scaleToLongSide =
+      longSide / Math.max(baseWidth, baseHeight);
 
     bookDimensions = {
       width: Math.max(260, Math.round(baseWidth * scaleToLongSide)),
@@ -231,16 +237,13 @@ async function buildFlipbookFromPdf(file) {
     }
 
     const page = await pdf.getPage(i);
+    const imageUrl = await renderPageAsImage(
+      page,
+      qualityPreset.scale,
+      qualityPreset.imageQuality
+    );
 
-const textContent = await page.getTextContent();
-const pageText = textContent.items
-  .map((item) => item.str)
-  .join(" ")
-  .trim();
-
-storyTexts.push(pageText);
-
-const imageUrl = await renderPageAsImage(page, qualityPreset.scale, qualityPreset.imageQuality);
+    currentObjectUrls.push(imageUrl);
 
     const pageNode = buildPageNode(imageUrl, i);
     flipbookEl.appendChild(pageNode);
@@ -252,7 +255,9 @@ const imageUrl = await renderPageAsImage(page, qualityPreset.scale, qualityPrese
     }
 
     if (i % 4 === 0 || i === pageCount) {
-      setStatus(`Rendered ${i}/${pageCount} page${pageCount === 1 ? "" : "s"}...`);
+      setStatus(
+        `Rendered ${i}/${pageCount} page${pageCount === 1 ? "" : "s"}...`
+      );
     }
   }
 
@@ -260,8 +265,7 @@ const imageUrl = await renderPageAsImage(page, qualityPreset.scale, qualityPrese
     flipbookContainer.hidden = false;
     statusEl.hidden = true;
     initializeFlipbook();
-updateReadingButtons(true);
-setStatus("Flipbook ready.");
+    setStatus("Flipbook ready.");
     statusEl.hidden = false;
     statusEl.classList.remove("error");
   }
@@ -276,11 +280,12 @@ setStatus("Flipbook ready.");
 }
 
 async function handlePdfFile(file) {
-  if (!file) {
-    return;
-  }
+  if (!file) return;
 
-  if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+  if (
+    file.type !== "application/pdf" &&
+    !file.name.toLowerCase().endsWith(".pdf")
+  ) {
     setStatus("Please upload a valid PDF file.", true);
     return;
   }
@@ -319,8 +324,10 @@ viewerWrap.addEventListener("dragover", (event) => {
 viewerWrap.addEventListener("dragleave", (event) => {
   event.preventDefault();
   dragDepth = Math.max(0, dragDepth - 1);
+
   if (dragDepth === 0) {
     viewerWrap.classList.remove("drag-active");
+
     if (!pageCount) {
       setStatus("Upload a PDF to generate your flipbook.");
     }
@@ -330,58 +337,27 @@ viewerWrap.addEventListener("dragleave", (event) => {
 viewerWrap.addEventListener("drop", async (event) => {
   event.preventDefault();
   dragDepth = 0;
-   utterance.rate = Number(readingSpeed.value);
-  utterance.onend = () => {
-    isReading = false;
-    pauseBtn.textContent = "⏸ Pause";
-  };
-
-  window.speechSynthesis.speak(utterance);
-  isReading = true;
-});
-
-pauseBtn.addEventListener("click", () => {
-  if (window.speechSynthesis.paused) {
-    window.speechSynthesis.resume();
-    pauseBtn.textContent = "⏸ Pause";
-  } else if (window.speechSynthesis.speaking) {
-    window.speechSynthesis.pause();
-    pauseBtn.textContent = "▶ Resume";
-  }
-});
-
-stopBtn.addEventListener("click", stopReading);
   viewerWrap.classList.remove("drag-active");
 
   const file = event.dataTransfer.files?.[0];
-  if (!file) {
-    return;
-  }
+  if (!file) return;
 
   await handlePdfFile(file);
 });
 
 prevBtn.addEventListener("click", () => {
-  if (pageFlip) {
-    pageFlip.flipPrev();
-  }
+  if (pageFlip) pageFlip.flipPrev();
 });
 
 nextBtn.addEventListener("click", () => {
-  if (pageFlip) {
-    pageFlip.flipNext();
-  }
+  if (pageFlip) pageFlip.flipNext();
 });
 
 goToPageBtn.addEventListener("click", () => {
-  if (!pageFlip) {
-    return;
-  }
+  if (!pageFlip) return;
 
   const targetPage = Number.parseInt(pageNumberInput.value, 10);
-  if (Number.isNaN(targetPage)) {
-    return;
-  }
+  if (Number.isNaN(targetPage)) return;
 
   const clamped = Math.min(Math.max(targetPage, 1), pageCount);
   pageFlip.flip(clamped - 1 + BLANK_FRONT_PAGE_COUNT);
