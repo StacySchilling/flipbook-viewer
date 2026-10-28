@@ -49,6 +49,19 @@
         <button id="goToPageBtn" class="btn" disabled>Go</button>
 
         <p id="pageIndicator" class="page-indicator" aria-live="polite">No document loaded</p>
+        <div class="reading-controls">
+  <button id="readBtn" class="btn" disabled>🔊 Read to Me</button>
+  <button id="pauseBtn" class="btn" disabled>⏸ Pause</button>
+  <button id="stopBtn" class="btn" disabled>⏹ Stop</button>
+  <label>
+    Reading speed
+    <select id="readingSpeed">
+      <option value="0.8">Slow</option>
+      <option value="1" selected>Normal</option>
+      <option value="1.2">Fast</option>
+    </select>
+  </label>
+</div>
       </section>
 
       <section class="viewer-wrap" aria-label="Flipbook viewer">
