@@ -421,7 +421,7 @@ readBtn.addEventListener("click", () => {
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = Number(readingSpeed.value);
+    utterance.rate = Number(readingSpeed.value) * 0.75;
 
     utterance.onend = speakNextPage;
 
