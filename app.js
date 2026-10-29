@@ -394,7 +394,6 @@ setControlsEnabled(false);
 updateIndicator();
 
 
-
 readBtn.addEventListener("click", () => {
   if (!storyTexts.length) {
     setStatus("No readable text was found in this PDF.", true);
@@ -403,73 +402,10 @@ readBtn.addEventListener("click", () => {
 
   window.speechSynthesis.cancel();
 
-  currentSpeechPage = pageFlip.getCurrentPageIndex();
-  isReading = true;
-
-  function speakNextPage() {
-    if (!isReading || currentSpeechPage >= storyTexts.length) {
-      isReading = false;
-      return;
-    }
-
-    const text = storyTexts[currentSpeechPage];
-    currentSpeechPage++;
-
-    if (!text) {
-      speakNextPage();
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = Number(readingSpeed.value) * 0.65;
-
-    utterance.onend = speakNextPage;
-
-    utterance.onerror = () => {
-      isReading = false;
-      setStatus("Reading stopped. Please try again.", true);
-    };
-
-    window.speechSynthesis.speak(utterance);
-  }
-
-  speakNextPage();
-});
-
-    function speakText() {
-      if (!isReading) return;
-
-      if (!text) {
-        speakNextPage();
-        return;
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = Number(readingSpeed.value) * 0.65;
-
-      utterance.onend = () => {
-        if (isReading) speakNextPage();
-      };
-
-      utterance.onerror = () => {
-        isReading = false;
-        setStatus("Reading stopped. Please try again.", true);
-      };
-
-      window.speechSynthesis.speak(utterance);
-    }
-
-    if (pageFlip.getCurrentPageIndex() !== flipbookPageIndex) {
-      pageFlip.flip(flipbookPageIndex);
-      setTimeout(speakText, 800);
-    } else {
-      speakText();
-    }
-  }
-
-  speakNextPage();
-});
-
+  currentSpeechPage = Math.max(
+  0,
+  pageFlip.getCurrentPageIndex() - 1
+);
 
   function speakNextPage() {
     if (!isReading || currentSpeechPage >= storyTexts.length) {
@@ -524,4 +460,3 @@ stopBtn.addEventListener("click", () => {
   window.speechSynthesis.cancel();
   pauseBtn.textContent = "⏸ Pause";
 });
-
