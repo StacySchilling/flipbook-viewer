@@ -400,12 +400,13 @@ readBtn.addEventListener("click", () => {
     return;
   }
 
-  window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel();
+  isReading = true;
 
   currentSpeechPage = Math.max(
-  0,
-  pageFlip.getCurrentPageIndex() - 1
-);
+    0,
+    pageFlip.getCurrentPageIndex() - 1
+  );
 
   function speakNextPage() {
     if (!isReading || currentSpeechPage >= storyTexts.length) {
