@@ -394,18 +394,69 @@ setControlsEnabled(false);
 updateIndicator();
 
 
+
 readBtn.addEventListener("click", () => {
-  if (!storyTexts.length) {
+  if (!storyTexts.length || !pageFlip) {
     setStatus("No readable text was found in this PDF.", true);
     return;
   }
 
   window.speechSynthesis.cancel();
 
+  isReading = true;
+
   currentSpeechPage = Math.max(
-  0,
-  pageFlip.getCurrentPageIndex() - 1
-);
+    0,
+    pageFlip.getCurrentPageIndex() - BLANK_FRONT_PAGE_COUNT
+  );
+
+  function speakNextPage() {
+    if (!isReading || currentSpeechPage >= storyTexts.length) {
+      isReading = false;
+      return;
+    }
+
+    const pageToRead = currentSpeechPage;
+    const text = storyTexts[pageToRead];
+    const flipbookPageIndex =
+      pageToRead + BLANK_FRONT_PAGE_COUNT;
+
+    currentSpeechPage++;
+
+    function speakText() {
+      if (!isReading) return;
+
+      if (!text) {
+        speakNextPage();
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = Number(readingSpeed.value) * 0.65;
+
+      utterance.onend = () => {
+        if (isReading) speakNextPage();
+      };
+
+      utterance.onerror = () => {
+        isReading = false;
+        setStatus("Reading stopped. Please try again.", true);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    if (pageFlip.getCurrentPageIndex() !== flipbookPageIndex) {
+      pageFlip.flip(flipbookPageIndex);
+      setTimeout(speakText, 800);
+    } else {
+      speakText();
+    }
+  }
+
+  speakNextPage();
+});
+
 
   function speakNextPage() {
     if (!isReading || currentSpeechPage >= storyTexts.length) {
