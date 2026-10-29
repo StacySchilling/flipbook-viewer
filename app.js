@@ -396,21 +396,15 @@ updateIndicator();
 
 
 readBtn.addEventListener("click", () => {
-  if (!storyTexts.length || !pageFlip) {
+  if (!storyTexts.length) {
     setStatus("No readable text was found in this PDF.", true);
     return;
   }
 
   window.speechSynthesis.cancel();
 
+  currentSpeechPage = pageFlip.getCurrentPageIndex();
   isReading = true;
-  console.log("Reading page:", pageToRead + 1, "Text:", text);
-console.log("Speech supported:", "speechSynthesis" in window);
-
-  currentSpeechPage = Math.max(
-    0,
-    pageFlip.getCurrentPageIndex() - BLANK_FRONT_PAGE_COUNT
-  );
 
   function speakNextPage() {
     if (!isReading || currentSpeechPage >= storyTexts.length) {
@@ -418,12 +412,29 @@ console.log("Speech supported:", "speechSynthesis" in window);
       return;
     }
 
-    const pageToRead = currentSpeechPage;
-    const text = storyTexts[pageToRead];
-    const flipbookPageIndex =
-      pageToRead + BLANK_FRONT_PAGE_COUNT;
-
+    const text = storyTexts[currentSpeechPage];
     currentSpeechPage++;
+
+    if (!text) {
+      speakNextPage();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = Number(readingSpeed.value) * 0.65;
+
+    utterance.onend = speakNextPage;
+
+    utterance.onerror = () => {
+      isReading = false;
+      setStatus("Reading stopped. Please try again.", true);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  speakNextPage();
+});
 
     function speakText() {
       if (!isReading) return;
