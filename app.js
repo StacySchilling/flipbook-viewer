@@ -404,6 +404,8 @@ readBtn.addEventListener("click", () => {
   window.speechSynthesis.cancel();
 
   isReading = true;
+  console.log("Reading page:", pageToRead + 1, "Text:", text);
+console.log("Speech supported:", "speechSynthesis" in window);
 
   currentSpeechPage = Math.max(
     0,
